@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化妆品质量异常信息报告</title>
+    <!-- 引入 SheetJS 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #4a86e8;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a86e8;
+        }
+        .report-title {
+            font-size: 20px;
+            margin: 10px 0;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 25px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a86e8;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            width: 20%;
+        }
+        .required::after {
+            content: " *";
+            color: red;
+        }
+        textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        input[type="text"], input[type="date"], input[type="datetime-local"], input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            font-family: inherit;
+        }
+        .signature-set {
+            margin-bottom: 15px;
+        }
+        .signature-pad {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            touch-action: none;
+            cursor: crosshair;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .clear-signature {
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .clear-signature:hover {
+            background-color: #e0e0e0;
+        }
+        .photo-area {
+            margin-top: 15px;
+        }
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .photo-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .action-buttons {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        button {
+            padding: 12px 24px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .print-btn {
+            background-color: #6c757d;
+        }
+        .print-btn:hover {
+            background-color: #5a6268;
+        }
+        .export-btn {
+            background-color: #28a745;
+        }
+        .export-btn:hover {
+            background-color: #218838;
+        }
+        .reset-btn {
+            background-color: #dc3545;
+        }
+        .reset-btn:hover {
+            background-color: #c82333;
+        }
+        .checkbox-group, .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .checkbox-group label, .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        input[type="checkbox"], input[type="radio"] {
+            width: auto;
+        }
+        .signature-label {
+            margin-top: 10px;
+            font-weight: bold;
+            display: block;
+        }
+        .file-upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 10px;
+            background-color: #f9f9f9;
+        }
+        .file-upload-area:hover {
+            border-color: #4a86e8;
+            background-color: #f0f7ff;
+        }
+        .instructions {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        @media print {
+            .action-buttons {
+                display: none;
+            }
+            .file-upload-area, .clear-signature {
+                display: none;
+            }
+            .section {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">美妆科技有限公司</div>
+        <h1 class="report-title">化妆品质量异常信息报告</h1>
+        <p class="instructions">请详细填写以下信息，确保数据准确完整</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">一、异常基本信息</div>
+        <table>
+            <tr>
+                <th>异常发现日期与时间</th>
+                <td><input type="datetime-local" id="discoveryTime"></td>
+                <th>报告日期</th>
+                <td><input type="date" id="reportDate"></td>
+            </tr>
+            <tr>
+                <th>异常发现地点/环节</th>
+                <td colspan="3">
+                    <input type="text" id="discoveryLocation" placeholder="例如：原料仓库、配料间、灌装线等">
+                </td>
+            </tr>
+            <tr>
+                <th>发现人</th>
+                <td><input type="text" id="discoverer"></td>
+                <th>所属部门</th>
+                <td><input type="text" id="discovererDepartment"></td>
+            </tr>
+            <tr>
+                <th>异常描述</th>
+                <td colspan="3">
+                    <textarea id="abnormalDescription" placeholder="请简要描述异常现象"></textarea>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">二、产品及批次信息</div>
+        <table>
+            <tr>
+                <th>产品名称</th>
+                <td><input type="text" id="productName"></td>
+                <th>产品代码</th>
+                <td><input type="text" id="productCode"></td>
+            </tr>
+            <tr>
+                <th>生产批号</th>
+                <td><input type="text" id="batchNumber"></td>
+                <th>生产日期</th>
+                <td><input type="date" id="productionDate"></td>
+            </tr>
+            <tr>
+                <th>有效期至</th>
+                <td><input type="date" id="expiryDate"></td>
+                <th>产品规格</th>
+                <td><input type="text" id="productSpec"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">三、异常现象具体描述</div>
+        <table>
+            <tr>
+                <th>异常类型</th>
+                <td>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="abnormalType" value="感官指标"> 感官指标(颜色、气味、质地等)</label>
+                        <label><input type="checkbox" name="abnormalType" value="理化指标"> 理化指标(pH值、粘度等)</label>
+                        <label><input type="checkbox" name="abnormalType" value="微生物指标"> 微生物指标</label>
+                        <label><input type="checkbox" name="abnormalType" value="包装材料问题"> 包装材料问题</label>
+                        <label><input type="checkbox" name="abnormalType" value="净含量问题"> 净含量问题</label>
+                        <label><input type="checkbox" name="abnormalType" value="其他"> 其他</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>异常详细描述</th>
+                <td>
+                    <textarea id="abnormalDetail" placeholder="请详细描述异常的具体表现，包括颜色变化、气味异常、质地变化、包装问题等"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>异常程度</th>
+                <td>
+                    <div class="radio-group">
+                        <label><input type="radio" name="severity" value="轻微偏差"> 轻微偏差</label>
+                        <label><input type="radio" name="severity" value="明显不符"> 明显不符</label>
+                        <label><input type="radio" name="severity" value="严重缺陷"> 严重缺陷</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>发生比例</th>
+                <td>
+                    <input type="text" id="occurrenceRatio" placeholder="例如：抽检100瓶，有5瓶出现问题">
+                </td>
+            </tr>
+            <tr>
+                <th>分布情况</th>
+                <td>
+                    <div class="radio-group">
+                        <label><input type="radio" name="distribution" value="随机分布"> 随机分布</label>
+                        <label><input type="radio" name="distribution" value="集中分布"> 集中分布</label>
+                        <label><input type="radio" name="distribution" value="其他"> 其他</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>上传异常照片</th>
+                <td>
+                    <div class="file-upload-area">
+                        <input type="file" id="imageUpload" accept="image/*" multiple>
+                        <p class="instructions">支持多选，最多上传5张图片 (JPG, PNG格式)</p>
+                    </div>
+                    <div class="photo-area">
+                        <div class="photo-preview-container" id="photoPreviewArea"></div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">四、生产流程相关信息</div>
+        <table>
+            <tr>
+                <th>主要原料信息</th>
+                <td>
+                    <textarea id="rawMaterialInfo" placeholder="记录所有使用的原料名称、批号、供应商"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>关键工艺参数</th>
+                <td>
+                    <textarea id="processParameters" placeholder="记录加热温度、搅拌速度与时间、均质压力等关键参数"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>环境控制记录</th>
+                <td>
+                    <textarea id="environmentControl" placeholder="记录生产车间的温湿度、设备清洁与消毒情况等"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>操作人员</th>
+                <td><input type="text" id="operators" placeholder="当班的生产、灌装、检验等人员"></td>
+            </tr>
+            <tr>
+                <th>生产设备</th>
+                <td><input type="text" id="productionEquipment" placeholder="设备编号及状态"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">五、调查与处理</div>
+        <table>
+            <tr>
+                <th>已采取的紧急措施</th>
+                <td>
+                    <textarea id="emergencyMeasures" placeholder="例如：隔离该批次产品、暂停生产等"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>样品留存情况</th>
+                <td>
+                    <textarea id="sampleRetention" placeholder="描述是否有留样及留样状态"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>初步原因分析</th>
+                <td>
+                    <textarea id="preliminaryAnalysis" placeholder="基于现有信息，对可能原因进行初步分析"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>建议纠正与预防措施</th>
+                <td>
+                    <textarea id="correctiveActions" placeholder="提出防止问题再次发生的建议措施"></textarea>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">六、审批与确认</div>
+        <table>
+            <tr>
+                <th>报告人</th>
+                <td>
+                    <div class="signature-set">
+                        <canvas class="signature-pad" id="reporterSignature" width="300" height="150"></canvas>
+                        <button type="button" class="clear-signature">清除签名</button>
+                    </div>
+                    <span class="signature-label">签名：</span>
+                </td>
+                <th>日期</th>
+                <td><input type="date" id="reporterDate"></td>
+            </tr>
+            <tr>
+                <th>质量负责人</th>
+                <td>
+                    <div class="signature-set">
+                        <canvas class="signature-pad" id="qualityManagerSignature" width="300" height="150"></canvas>
+                        <button type="button" class="clear-signature">清除签名</button>
+                    </div>
+                    <span class="signature-label">签名：</span>
+                </td>
+                <th>日期</th>
+                <td><input type="date" id="qualityManagerDate"></td>
+            </tr>
+            <tr>
+                <th>生产负责人</th>
+                <td>
+                    <div class="signature-set">
+                        <canvas class="signature-pad" id="productionManagerSignature" width="300" height="150"></canvas>
+                        <button type="button" class="clear-signature">清除签名</button>
+                    </div>
+                    <span class="signature-label">签名：</span>
+                </td>
+                <th>日期</th>
+                <td><input type="date" id="productionManagerDate"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="action-buttons">
+        <button class="print-btn" onclick="window.print()">打印报告</button>
+        <button class="export-btn" onclick="exportToExcel()">导出到Excel</button>
+        <button class="reset-btn" onclick="resetForm()">重置表单</button>
+    </div>
+
+    <script>
+        // 初始化函数 - 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认日期
+            const now = new Date();
+            document.getElementById('reportDate').valueAsDate = now;
+            document.getElementById('reporterDate').valueAsDate = now;
+            document.getElementById('qualityManagerDate').valueAsDate = now;
+            document.getElementById('productionManagerDate').valueAsDate = now;
+            
+            // 初始化签名板
+            initializeSignaturePads();
+            
+            // 初始化图片上传功能
+            initializeImageUpload();
+        });
+
+        // 图片上传预览功能
+        function initializeImageUpload() {
+            document.getElementById('imageUpload').addEventListener('change', function(event) {
+                const files = event.target.files;
+                const previewArea = document.getElementById('photoPreviewArea');
+                
+                // 限制最多5张图片
+                if (files.length > 5) {
+                    alert('最多只能上传5张图片');
+                    this.value = '';
+                    return;
+                }
+                
+                previewArea.innerHTML = ''; // 清空之前的预览
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (!file.type.match('image.*')) {
+                        continue;
+                    }
+                    
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = e.target.result;
+                        imgElement.className = 'preview-image';
+                        imgElement.alt = '异常现象图片 ' + (i + 1);
+                        
+                        previewArea.appendChild(imgElement);
+                    }
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // 签名板功能
+        function initializeSignaturePads() {
+            const canvases = document.querySelectorAll('.signature-pad');
+            
+            canvases.forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                let isDrawing = false;
+                let lastX = 0;
+                let lastY = 0;
+                
+                // 设置画笔样式
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#000000';
+                
+                // 开始绘制
+                function startDrawing(e) {
+                    isDrawing = true;
+                    const { offsetX, offsetY } = getCoordinates(e, canvas);
+                    [lastX, lastY] = [offsetX, offsetY];
+                }
+                
+                // 绘制过程
+                function draw(e) {
+                    if (!isDrawing) return;
+                    e.preventDefault();
+                    
+                    const { offsetX, offsetY } = getCoordinates(e, canvas);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(offsetX, offsetY);
+                    ctx.stroke();
+                    
+                    [lastX, lastY] = [offsetX, offsetY];
+                }
+                
+                // 结束绘制
+                function stopDrawing() {
+                    isDrawing = false;
+                }
+                
+                // 获取坐标（同时支持鼠标和触摸事件）
+                function getCoordinates(e, canvas) {
+                    if (e.type.includes('touch')) {
+                        const rect = canvas.getBoundingClientRect();
+                        const touch = e.touches[0];
+                        return {
+                            offsetX: touch.clientX - rect.left,
+                            offsetY: touch.clientY - rect.top
+                        };
+                    } else {
+                        return {
+                            offsetX: e.offsetX,
+                            offsetY: e.offsetY
+                        };
+                    }
+                }
+                
+                // 事件监听
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+                
+                // 触摸事件支持
+                canvas.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    startDrawing(e);
+                });
+                canvas.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                    draw(e);
+                });
+                canvas.addEventListener('touchend', stopDrawing);
+                
+                // 清除画布
+                const clearBtn = canvas.parentNode.querySelector('.clear-signature');
+                clearBtn.addEventListener('click', () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
+            });
+        }
+
+        // 导出到Excel功能
+        function exportToExcel() {
+            // 收集表单数据
+            const formData = collectFormData();
+            
+            // 创建工作簿
+            const wb = XLSX.utils.book_new();
+            
+            // 创建主数据工作表
+            const mainData = formatMainData(formData);
+            const wsMain = XLSX.utils.json_to_sheet(mainData);
+            XLSX.utils.book_append_sheet(wb, wsMain, "质量异常报告");
+            
+            // 创建详细数据工作表
+            const detailData = formatDetailData(formData);
+            const wsDetail = XLSX.utils.json_to_sheet(detailData);
+            XLSX.utils.book_append_sheet(wb, wsDetail, "详细信息");
+            
+            // 生成文件名
+            const productName = document.getElementById('productName').value || '未知产品';
+            const batchNumber = document.getElementById('batchNumber').value || '未知批次';
+            const fileName = `化妆品质量异常报告_${productName}_${batchNumber}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            
+            // 导出文件
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // 收集表单数据
+        function collectFormData() {
+            const data = {};
+            
+            // 异常基本信息
+            data.discoveryTime = document.getElementById('discoveryTime').value;
+            data.reportDate = document.getElementById('reportDate').value;
+            data.discoveryLocation = document.getElementById('discoveryLocation').value;
+            data.discoverer = document.getElementById('discoverer').value;
+            data.discovererDepartment = document.getElementById('discovererDepartment').value;
+            data.abnormalDescription = document.getElementById('abnormalDescription').value;
+            
+            // 产品及批次信息
+            data.productName = document.getElementById('productName').value;
+            data.productCode = document.getElementById('productCode').value;
+            data.batchNumber = document.getElementById('batchNumber').value;
+            data.productionDate = document.getElementById('productionDate').value;
+            data.expiryDate = document.getElementById('expiryDate').value;
+            data.productSpec = document.getElementById('productSpec').value;
+            
+            // 异常现象具体描述
+            const abnormalTypeCheckboxes = document.getElementsByName('abnormalType');
+            data.abnormalTypes = Array.from(abnormalTypeCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value)
+                .join(', ');
+            data.abnormalDetail = document.getElementById('abnormalDetail').value;
+            
+            const severityRadios = document.getElementsByName('severity');
+            data.severity = Array.from(severityRadios)
+                .find(radio => radio.checked)?.value || '';
+                
+            data.occurrenceRatio = document.getElementById('occurrenceRatio').value;
+            
+            const distributionRadios = document.getElementsByName('distribution');
+            data.distribution = Array.from(distributionRadios)
+                .find(radio => radio.checked)?.value || '';
+            
+            // 收集图片信息
+            const fileInput = document.getElementById('imageUpload');
+            data.uploadedImagesCount = fileInput.files.length;
+            data.uploadedImagesNames = Array.from(fileInput.files).map(f => f.name).join(', ');
+            
+            // 生产流程相关信息
+            data.rawMaterialInfo = document.getElementById('rawMaterialInfo').value;
+            data.processParameters = document.getElementById('processParameters').value;
+            data.environmentControl = document.getElementById('environmentControl').value;
+            data.operators = document.getElementById('operators').value;
+            data.productionEquipment = document.getElementById('productionEquipment').value;
+            
+            // 调查与处理
+            data.emergencyMeasures = document.getElementById('emergencyMeasures').value;
+            data.sampleRetention = document.getElementById('sampleRetention').value;
+            data.preliminaryAnalysis = document.getElementById('preliminaryAnalysis').value;
+            data.correctiveActions = document.getElementById('correctiveActions').value;
+            
+            // 审批日期和签名状态
+            data.reporterDate = document.getElementById('reporterDate').value;
+            data.qualityManagerDate = document.getElementById('qualityManagerDate').value;
+            data.productionManagerDate = document.getElementById('productionManagerDate').value;
+            
+            // 检查签名状态
+            data.reporterSigned = !isCanvasBlank(document.getElementById('reporterSignature'));
+            data.qualityManagerSigned = !isCanvasBlank(document.getElementById('qualityManagerSignature'));
+            data.productionManagerSigned = !isCanvasBlank(document.getElementById('productionManagerSignature'));
+            
+            return data;
+        }
+
+        // 检查画布是否为空（即没有签名）
+        function isCanvasBlank(canvas) {
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i + 3] !== 0) return false; // 如果有非透明像素，说明有签名
+            }
+            return true;
+        }
+
+        // 格式化主数据
+        function formatMainData(formData) {
+            return [
+                { "项目": "产品名称", "值": formData.productName },
+                { "项目": "生产批号", "值": formData.batchNumber },
+                { "项目": "异常发现时间", "值": formData.discoveryTime },
+                { "项目": "异常类型", "值": formData.abnormalTypes },
+                { "项目": "异常程度", "值": formData.severity },
+                { "项目": "发现人", "值": formData.discoverer },
+                { "项目": "异常描述", "值": formData.abnormalDescription },
+                { "项目": "紧急措施", "值": formData.emergencyMeasures },
+                { "项目": "初步原因分析", "值": formData.preliminaryAnalysis },
+                { "项目": "上传图片数量", "值": formData.uploadedImagesCount },
+                { "项目": "报告人签名", "值": formData.reporterSigned ? "已签名" : "未签名" },
+                { "项目": "质量负责人签名", "值": formData.qualityManagerSigned ? "已签名" : "未签名" },
+                { "项目": "生产负责人签名", "值": formData.productionManagerSigned ? "已签名" : "未签名" }
+            ];
+        }
+
+        // 格式化详细数据
+        function formatDetailData(formData) {
+            const detailData = [];
+            
+            // 添加所有表单数据到详细工作表
+            for (const [key, value] of Object.entries(formData)) {
+                let displayName = '';
+                
+                // 将字段名转换为中文显示名
+                switch(key) {
+                    case 'discoveryTime': displayName = '异常发现时间'; break;
+                    case 'reportDate': displayName = '报告日期'; break;
+                    case 'discoveryLocation': displayName = '发现地点/环节'; break;
+                    case 'discoverer': displayName = '发现人'; break;
+                    case 'discovererDepartment': displayName = '发现人部门'; break;
+                    case 'abnormalDescription': displayName = '异常描述'; break;
+                    case 'productName': displayName = '产品名称'; break;
+                    case 'productCode': displayName = '产品代码'; break;
+                    case 'batchNumber': displayName = '生产批号'; break;
+                    case 'productionDate': displayName = '生产日期'; break;
+                    case 'expiryDate': displayName = '有效期至'; break;
+                    case 'productSpec': displayName = '产品规格'; break;
+                    case 'abnormalTypes': displayName = '异常类型'; break;
+                    case 'abnormalDetail': displayName = '异常详细描述'; break;
+                    case 'severity': displayName = '异常程度'; break;
+                    case 'occurrenceRatio': displayName = '发生比例'; break;
+                    case 'distribution': displayName = '分布情况'; break;
+                    case 'uploadedImagesCount': displayName = '上传图片数量'; break;
+                    case 'uploadedImagesNames': displayName = '上传图片文件名'; break;
+                    case 'rawMaterialInfo': displayName = '主要原料信息'; break;
+                    case 'processParameters': displayName = '关键工艺参数'; break;
+                    case 'environmentControl': displayName = '环境控制记录'; break;
+                    case 'operators': displayName = '操作人员'; break;
+                    case 'productionEquipment': displayName = '生产设备'; break;
+                    case 'emergencyMeasures': displayName = '紧急措施'; break;
+                    case 'sampleRetention': displayName = '样品留存情况'; break;
+                    case 'preliminaryAnalysis': displayName = '初步原因分析'; break;
+                    case 'correctiveActions': displayName = '纠正预防措施'; break;
+                    case 'reporterDate': displayName = '报告人日期'; break;
+                    case 'qualityManagerDate': displayName = '质量负责人日期'; break;
+                    case 'productionManagerDate': displayName = '生产负责人日期'; break;
+                    case 'reporterSigned': displayName = '报告人签名状态'; break;
+                    case 'qualityManagerSigned': displayName = '质量负责人签名状态'; break;
+                    case 'productionManagerSigned': displayName = '生产负责人签名状态'; break;
+                    default: displayName = key;
+                }
+                
+                detailData.push({ 
+                    "字段名称": displayName, 
+                    "字段值": value || '未填写'
+                });
+            }
+            
+            return detailData;
+        }
+
+        // 重置表单功能
+        function resetForm() {
+            if (confirm('确定要重置表单吗？所有已填写的数据都将丢失。')) {
+                // 重置所有输入字段
+                document.querySelectorAll('input, textarea').forEach(element => {
+                    if (element.type === 'text' || element.type === 'date' || element.type === 'datetime-local') {
+                        element.value = '';
+                    } else if (element.type === 'checkbox' || element.type === 'radio') {
+                        element.checked = false;
+                    } else if (element.type === 'file') {
+                        element.value = '';
+                    }
+                });
+                
+                // 清空所有签名板
+                document.querySelectorAll('.signature-pad').forEach(canvas => {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
+                
+                // 清空图片预览
+                document.getElementById('photoPreviewArea').innerHTML = '';
+                
+                // 重置日期为今天
+                const now = new Date();
+                document.getElementById('reportDate').valueAsDate = now;
+                document.getElementById('reporterDate').valueAsDate = now;
+                document.getElementById('qualityManagerDate').valueAsDate = now;
+                document.getElementById('productionManagerDate').valueAsDate = now;
+                
+                alert('表单已重置！');
+            }
+        }
+    </script>
+</body>
+</html>
